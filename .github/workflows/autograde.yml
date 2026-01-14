@@ -1,0 +1,46 @@
+name: Autograde
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  autograde:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Run the autograder but don't stop the job yet (we want to publish a summary either way)
+      - name: Run autograder
+        id: run_autograder
+        continue-on-error: true
+        run: |
+          python .github/workflows/autograde.py --json autograde_results.json --summary autograde_summary.md
+
+      - name: Publish summary
+        run: |
+          cat autograde_summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      # Fail the workflow if the autograder says failed
+      - name: Enforce pass/fail
+        run: |
+          python - <<'PY'
+          import json, sys
+          with open("autograde_results.json", "r", encoding="utf-8") as f:
+              data = json.load(f)
+          if not data.get("passed", False):
+              print("Autograding failed.")
+              sys.exit(1)
+          print("Autograding passed.")
+          PY

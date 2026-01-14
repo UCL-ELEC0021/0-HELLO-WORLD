@@ -1,0 +1,5 @@
+name: elec0021
+dependencies:
+  - python=3.11
+  - pip
+  - -r requirements.txt
