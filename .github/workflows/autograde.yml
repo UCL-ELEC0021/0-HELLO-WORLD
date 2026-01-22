@@ -2,7 +2,8 @@ name: Autograde
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["feedback"] # PRs targeting 'feedback'
+    types: [closed] # only when the PR is closed (includes merged)
   workflow_dispatch: {}
 
 permissions:
